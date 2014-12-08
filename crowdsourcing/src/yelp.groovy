@@ -156,27 +156,8 @@ for (int fold = 0; fold < folds; fold++) {
 	data.getInserter(ratingPrior, read_tr).insertValue(0.5, constant)
 	data.getInserter(ratingPrior, read_te).insertValue(0.5, constant)
 	
-	/** POPULATE DB ***/
+	
 
-	/* We want to populate the database with all groundings 'rating' and 'ratingObs'
-	 * To do so, we will query for all users and jokes in train/test, then use the
-	 * database populator to compute the cross-product. 
-	 */
-	DatabasePopulator dbPop;
-	Variable User = new Variable("User");
-	Variable Joke = new Variable("Business");
-	Set<GroundTerm> users = new HashSet<GroundTerm>();
-	Set<GroundTerm> business = new HashSet<GroundTerm>();
-/* what are the following lines doing?
-Map<Variable, Set<GroundTerm>> subs = new HashMap<Variable, Set<GroundTerm>>();
-	subs.put(User, users);
-	subs.put(Joke, jokes);*/
-	ResultList results;
-	def toClose;
-	
-	AdjCosineSimilarity userCosSim = new AdjCosineSimilarity(rating, 1, avgJokeRatingObs, simThresh);// check
-	AdjCosineSimilarity bussinessCosSim = new AdjCosineSimilarity(rating, 0, avgUserRatingObs, simThresh);//check
-	
 	/** POPULATE DB ***/
 
 	/* We want to populate the database with all groundings 'rating' 
