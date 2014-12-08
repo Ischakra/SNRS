@@ -168,7 +168,7 @@ for (int fold = 0; fold < folds; fold++) {
 	 */
 	DatabasePopulator dbPop;
 	Variable User = new Variable("User");
-	Variable Bussiness = new Variable("Business");
+	Variable Business = new Variable("Business");
 	Set<GroundTerm> users = new HashSet<GroundTerm>();
 	Set<GroundTerm> business = new HashSet<GroundTerm>();
 	Map<Variable, Set<GroundTerm>> subs = new HashMap<Variable, Set<GroundTerm>>();
@@ -189,7 +189,7 @@ for (int fold = 0; fold < folds; fold++) {
 		trainDB.commit(a);
 	}
 	
-	ResultList bussinessGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(business));
+	ResultList businessGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(business));
 	for (int i = 0; i < businessGroundings.size(); i++) {
 		GroundTerm b = businessGroundings.get(i)[0];
 		business.add(b);// adding b to the Map of business
@@ -266,7 +266,7 @@ for (int fold = 0; fold < folds; fold++) {
 	/* Clear the users, business so we can reuse */
 	users.clear();
 	business.clear();
-	/* Get the test set users/jokes
+	/* Get the test set users/business
 	 *
 	 */
 	Database testDB = data.getDatabase(read_te);
@@ -280,7 +280,7 @@ for (int fold = 0; fold < folds; fold++) {
 		testDB.commit(a);
 	}
 	
-	ResultList bussinessGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(business));
+	ResultList businessGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(business));
 	for (int i = 0; i < businessGroundings.size(); i++) {
 		GroundTerm b = businessGroundings.get(i)[0];
 		business.add(b);// adding b to the Map of business
@@ -289,3 +289,60 @@ for (int fold = 0; fold < folds; fold++) {
 		a.setValue(avg);// need to read given avg values from file before this
 		testDB.commit(a);
 	}
+// did not compute the priors, need to do something
+
+	/* Precompute the similarities of users and businesses */
+	log.info("Computing training business similarities ...")
+	int nnzSim = 0;
+	double avgsim = 0.0;
+	List<GroundTerm> businessList = new ArrayList(business);
+	for (int i = 0; i < businessList.size(); i++) {
+		GroundTerm j1 = businessList.get(i);
+		for (int j = i+1; j < businessList.size(); j++) {
+			GroundTerm j2 = businessList.get(j);
+			double s = businessCosSim.getValue(testDB, j1, j2);
+			if (s > 0.0) {
+				/* upper half */ // why half ?
+				RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(simObsRatingB, j1, j2);
+				a.setValue(s);
+				testDB.commit(a);
+				/* lower half */
+				a = (RandomVariableAtom) testDB.getAtom(simObsRatingB, j2, j1);
+				a.setValue(s);
+				testDB.commit(a);
+				/* update stats */
+				++nnzSim;
+				avgsim += s;
+			}
+		}
+	}
+	
+	log.info("Computing training user similarities ...")
+	int nnzSim = 0;
+	double avgsim = 0.0;
+	List<GroundTerm> usersList = new ArrayList(users);
+	for (int i = 0; i < usersList.size(); i++) {
+		GroundTerm j1 = usersList.get(i);
+		for (int j = i+1; j < usersList.size(); j++) {
+			GroundTerm j2 = usersList.get(j);
+			double s = userCosSim.getValue(testDB, j1, j2);
+			if (s > 0.0) {
+				/* upper half */ // why half ?
+				RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(simObsRatingB, j1, j2);
+				a.setValue(s);
+				testDB.commit(a);
+				/* lower half */
+				a = (RandomVariableAtom) testDB.getAtom(simObsRatingB, j2, j1);
+				a.setValue(s);
+				testDB.commit(a);
+				/* update stats */
+				++nnzSim;
+				avgsim += s;
+			}
+		}
+	}
+	
+	log.info("  Number nonzero sim (train): {}", nnzSim);// check
+	log.info("  Average joke rating sim (train): {}", avgsim / nnzSim);// check whether twice for user & business
+	testDB.close();
+	
