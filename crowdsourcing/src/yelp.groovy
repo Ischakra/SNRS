@@ -263,4 +263,29 @@ for (int fold = 0; fold < folds; fold++) {
 	dbPop.populate(new QueryAtom(rating, User, Business), subs);
 	Database labelsDB = data.getDatabase(labels_tr, [rating] as Set)
 
+	/* Clear the users, business so we can reuse */
+	users.clear();
+	business.clear();
+	/* Get the test set users/jokes
+	 *
+	 */
+	Database testDB = data.getDatabase(read_te);
+	ResultList userGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(user));
+	for (int i = 0; i < userGroundings.size(); i++) {
+		GroundTerm u = userGroundings.get(i)[0];
+		users.add(u);// adding u to the Map of users
+		// need not calculate avg
+		RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(avgUserRating, u)// change the avg
+		a.setValue(avg);// need to read given avg values from file before this
+		testDB.commit(a);
+	}
 	
+	ResultList bussinessGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(business));
+	for (int i = 0; i < businessGroundings.size(); i++) {
+		GroundTerm b = businessGroundings.get(i)[0];
+		business.add(b);// adding b to the Map of business
+		// need not calculate avg
+		RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(avgBusinessRating, b)// change the avg
+		a.setValue(avg);// need to read given avg values from file before this
+		testDB.commit(a);
+	}
