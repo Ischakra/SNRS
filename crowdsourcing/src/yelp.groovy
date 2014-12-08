@@ -177,5 +177,109 @@ Map<Variable, Set<GroundTerm>> subs = new HashMap<Variable, Set<GroundTerm>>();
 	AdjCosineSimilarity userCosSim = new AdjCosineSimilarity(rating, 1, avgJokeRatingObs, simThresh);// check
 	AdjCosineSimilarity bussinessCosSim = new AdjCosineSimilarity(rating, 0, avgUserRatingObs, simThresh);//check
 	
+	/** POPULATE DB ***/
+
+	/* We want to populate the database with all groundings 'rating' 
+	 * To do so, we will query for all users and bussiness in train/test, then use the
+	 * database populator to compute the cross-product. 
+	 
+	 **********check **************************************
+	 */
+	DatabasePopulator dbPop;
+	Variable User = new Variable("User");
+	Variable Bussiness = new Variable("Business");
+	Set<GroundTerm> users = new HashSet<GroundTerm>();
+	Set<GroundTerm> business = new HashSet<GroundTerm>();
+	Map<Variable, Set<GroundTerm>> subs = new HashMap<Variable, Set<GroundTerm>>();
+	subs.put(User, users);
+	subs.put(Business, business);
+	def toClose;
+ 	AdjCosineSimilarity userCosSim = new AdjCosineSimilarity(rating, 1, avgBusinessRating, simThresh);
+	AdjCosineSimilarity businessCosSim = new AdjCosineSimilarity(rating, 0, avgUserRating, simThresh);
 	
+	Database trainDB = data.getDatabase(read_tr);
+	ResultList userGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(user));
+	for (int i = 0; i < userGroundings.size(); i++) {
+		GroundTerm u = userGroundings.get(i)[0];
+		users.add(u);// adding u to the Map of users
+		// need not calculate avg
+		RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(avgUserRating, u)// change the avg
+		a.setValue(avg);// need to read given avg values from file before this
+		trainDB.commit(a);
+	}
+	
+	ResultList bussinessGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(business));
+	for (int i = 0; i < businessGroundings.size(); i++) {
+		GroundTerm b = businessGroundings.get(i)[0];
+		business.add(b);// adding b to the Map of business
+		// need not calculate avg
+		RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(avgBusinessRating, b)// change the avg
+		a.setValue(avg);// need to read given avg values from file before this
+		trainDB.commit(a);
+	}
+	
+	
+	/* Precompute the similarities of users and businesses */
+	log.info("Computing training business similarities ...")
+	int nnzSim = 0;
+	double avgsim = 0.0;
+	List<GroundTerm> businessList = new ArrayList(business);
+	for (int i = 0; i < businessList.size(); i++) {
+		GroundTerm j1 = businessList.get(i);
+		for (int j = i+1; j < businessList.size(); j++) {
+			GroundTerm j2 = businessList.get(j);
+			double s = businessCosSim.getValue(trainDB, j1, j2);
+			if (s > 0.0) {
+				/* upper half */ // why half ?
+				RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j1, j2);
+				a.setValue(s);
+				trainDB.commit(a);
+				/* lower half */
+				a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j2, j1);
+				a.setValue(s);
+				trainDB.commit(a);
+				/* update stats */
+				++nnzSim;
+				avgsim += s;
+			}
+		}
+	}
+	
+	log.info("Computing training user similarities ...")
+	int nnzSim = 0;
+	double avgsim = 0.0;
+	List<GroundTerm> usersList = new ArrayList(users);
+	for (int i = 0; i < usersList.size(); i++) {
+		GroundTerm j1 = usersList.get(i);
+		for (int j = i+1; j < usersList.size(); j++) {
+			GroundTerm j2 = usersList.get(j);
+			double s = userCosSim.getValue(trainDB, j1, j2);
+			if (s > 0.0) {
+				/* upper half */ // why half ?
+				RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j1, j2);
+				a.setValue(s);
+				trainDB.commit(a);
+				/* lower half */
+				a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j2, j1);
+				a.setValue(s);
+				trainDB.commit(a);
+				/* update stats */
+				++nnzSim;
+				avgsim += s;
+			}
+		}
+	}
+	
+	log.info("  Number nonzero sim (train): {}", nnzSim);// check
+	log.info("  Average joke rating sim (train): {}", avgsim / nnzSim);// check whether twice for user & business
+	trainDB.close();
+	
+	
+	log.info("Populating training database ...");
+	toClose = [user,business,ratingObs,ratingPrior,simJokeText,avgUserRatingObs,avgJokeRatingObs,simObsRating] as Set;// check
+	trainDB = data.getDatabase(write_tr, toClose, read_tr);
+	dbPop = new DatabasePopulator(trainDB);
+	dbPop.populate(new QueryAtom(rating, User, Business), subs);
+	Database labelsDB = data.getDatabase(labels_tr, [rating] as Set)
+
 	
