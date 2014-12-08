@@ -343,6 +343,67 @@ for (int fold = 0; fold < folds; fold++) {
 	}
 	
 	log.info("  Number nonzero sim (train): {}", nnzSim);// check
-	log.info("  Average joke rating sim (train): {}", avgsim / nnzSim);// check whether twice for user & business
+	log.info("  Average business rating sim (train): {}", avgsim / nnzSim);// check whether twice for user & business
+	testDB.close();
+	/* Populate testing database. */
+	log.info("Populating testing database ...");
+	toClose = [user,business,ratingObs,ratingPrior,simJokeText,avgUserRatingObs,avgJokeRatingObs,simObsRating] as Set;// check with sachi
+	testDB = data.getDatabase(write_te, toClose, read_te);
+	dbPop = new DatabasePopulator(testDB);
+	dbPop.populate(new QueryAtom(rating, User, Business), subs);
+	// no labels?
 	testDB.close();
 	
+	
+	/*** EXPERIMENT ***////check
+	log.info("Starting experiment ...");
+	for (int configIndex = 0; configIndex < configs.size(); configIndex++) {
+		ConfigBundle config = configs.get(configIndex);
+		def configName = config.getString("name", "");
+		def method = config.getString("learningmethod", "");
+
+		/* Weight learning */
+		WeightLearner.learn(method, m, trainDB, labelsDB, initWeights, config, log)
+
+		log.info("Learned model {}: \n {}", configName, m.toString())
+
+		/* Inference on test set */
+		Database predDB = data.getDatabase(write_te, toClose, read_te);
+		Set<GroundAtom> allAtoms = Queries.getAllAtoms(predDB, rating)
+		for (RandomVariableAtom atom : Iterables.filter(allAtoms, RandomVariableAtom))
+			atom.setValue(0.0)
+			/* For discrete MRFs, "MPE" inference will actually perform marginal inference */
+		MPEInference mpe = new MPEInference(m, predDB, config)
+		FullInferenceResult result = mpe.mpeInference()
+		log.info("Objective: {}", result.getTotalWeightedIncompatibility())
+		predDB.close();
+		
+		/* Evaluation *///check
+		predDB = data.getDatabase(write_te);
+		Database groundTruthDB = data.getDatabase(labels_te, [rating] as Set)
+		def comparator = new ContinuousPredictionComparator(predDB)
+		comparator.setBaseline(groundTruthDB)
+		def metrics = [ContinuousPredictionComparator.Metric.MSE, ContinuousPredictionComparator.Metric.MAE]
+		double [] score = new double[metrics.size()]
+		for (int i = 0; i < metrics.size(); i++) {
+			comparator.setMetric(metrics.get(i))
+			score[i] = comparator.compare(rating)
+		}
+		log.info("Fold {} : {} : MSE {} : MAE {}", fold, configName, score[0], score[1]);
+		expResults.get(config).add(fold, score);
+		predDB.close();
+		groundTruthDB.close()
+	}
+	trainDB.close()
+}
+	
+log.info("\n\nRESULTS\n");
+for (ConfigBundle config : configs) {
+	def configName = config.getString("name", "")
+	def scores = expResults.get(config);
+	for (int fold = 0; fold < folds; fold++) {
+		def score = scores.get(fold)
+		log.info("{} \t{}\t{}\t{}", configName, fold, score[0], score[1]);
+		log.Debug("{} \t{}\t{}\t{}", configName, fold, score[0], score[1]);// added
+	}
+}
