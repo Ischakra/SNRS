@@ -2,6 +2,8 @@ package crowdsourcing;
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import crowdsourcing.AdjCosineSimilarity;
+import util.ExperimentConfigGenerator;
+import edu.umd.cs.bachuai13.util.WeightLearner;
 
 import com.google.common.collect.Iterables
 import edu.umd.cs.psl.application.inference.MPEInference
@@ -61,9 +63,9 @@ m.add predicate: "rating", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 m.add predicate: "ratingFriendsMajority", types: [ArgumentType.UniqueID]//need to think about its value and arguments I think /*
 m.add predicate: "ratingPrior", types [ArgumentType.UniqueID]
 m.add predicate: "friends" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-m.add predicate: "review_count" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-m.add predicate: "bestReviewer" , types: [ArgumentType.UniqueID]
-m.add predicate: "votes", types, types : [ArgumentType.UniqueID
+m.add predicate: "review_count" , types: [ArgumentType.UniqueID]
+m.add predicate: "bestReviewer" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+//m.add predicate: "votes", types, types : [ArgumentType.UniqueID//
 m.add predicate: "fans" , types: [ArgumentType.UniqueID]
 
 m.add predicate: "similarUser", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
@@ -77,13 +79,13 @@ m.add function: "bestReviewer" , implementation : new bestReviewer()
 
 //two sided prior
 UniqueID constant = data.getUniqueID(0)
-m.add rule: ( user(U) & joke(J) & ratingPrior(constant) ) >> rating(U,J), weight: 5.0, squared: "Y";
-m.add rule: ( rating(U,J) ) >> ratingPrior(constant), weight: 5.0, squared: sq;
+m.add rule: ( user(U) & business(J) & ratingPrior(U) ) >> rating(U,J), weight: 5.0, squared: "Y";
+m.add rule: ( rating(U,J) ) >> ratingPrior(U), weight: 5.0, squared: sq;
 
-m.add rule : ( user(u) & bussiness(B) & ratingFriendsMajority(B)) >> rating (u,B) , weight : 5
+//m.add rule : ( user(u) & business(B) & ratingFriendsMajority(B)) >> rating (u,B) , weight : 5
 m.add rule : (friends(u1,u2) & rating (u1,B) >> rating (u2,B) , weight :5
 m.add rule : ( friends(u1,u2) & similarUser(u1,u2) & rating (u1,B)) >> rating (u2,B) , weight : 5
-m.add rule : ( friends(u1,u2) & bestReviewer(u1) & rating (u1,B))>> rating (u2,B) , weight :5
+m.add rule : ( friends(u1,u2) & bestReviewer(u1,u2) & rating (u1,B))>> rating (u2,B) , weight :5
 m.add rule : ( similarItem(B1,B2) & rating (u,B1)) >> rating (u, B2), weight :5
 m.add rule : ( similaruser (u1,u2) & rating (u1,B)) >> rating (u2,B) , weight :5
 
@@ -130,7 +132,7 @@ for (int fold = 0; fold < folds; fold++) {
 	inserter = data.getInserter(business, read_tr);
 	InserterUtils.loadDelimitedData(inserter, dataPath + "/business.txt");// need to put txt files
 	inserter = data.getInserter(business, read_te);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/business.txt");
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/ business.txt");
 	//user-user cosine similarity by rating
 	inserter = data.getInserter(similarUser, read_tr);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
