@@ -84,7 +84,7 @@ m.add rule: ( user(U) & business(J) & ratingPrior(U) ) >> rating(U,J), weight: 5
 m.add rule: ( rating(U,J) ) >> ratingPrior(U), weight: 5.0 ;
 
 //m.add rule : ( user(u) & business(B) & ratingFriendsMajority(B)) >> rating (u,B) , weight : 5
-m.add rule : (friends(u1,u2) & rating (u1,B) >> rating (u2,B) , weight :5
+m.add rule : ( friends(u1,u2) & rating (u1,B) ) >> rating (u2,B) , weight :5;
 m.add rule : ( friends(u1,u2) & similarUser(u1,u2) & rating (u1,B)) >> rating (u2,B) , weight : 5
 //m.add rule : ( friends(u1,u2) & bestReviewer(u1,u2) & rating (u1,B))>> rating (u2,B) , weight :5
 m.add rule : ( similarItem(B1,B2) & rating (u,B1)) >> rating (u, B2), weight :5
