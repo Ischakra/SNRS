@@ -97,7 +97,7 @@ Map<CompatibilityKernel,Weight> initWeights = new HashMap<CompatibilityKernel, W
 for (CompatibilityKernel k : Iterables.filter(m.getKernels(), CompatibilityKernel.class))
 	initWeights.put(k, k.getWeight());
 
-ExperimentConfigGenerator configGenerator = new ExperimentConfigGenerator("yelp");
+
 
 methods = ["MLE"];
 configGenerator.setLearningMethods(methods);
