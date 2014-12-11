@@ -60,8 +60,9 @@ PSLModel m = new PSLModel(this, data);
 m.add predicate: "user" , types: [ArgumentType.UniqueID]
 m.add predicate: "bussiness" , types: [ArgumentType.UniqueID]
 m.add predicate: "rating", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-m.add predicate: "ratingFriendsMajority", types: [ArgumentType.UniqueID]//need to think about its value and arguments I think /*
+//m.add predicate: "ratingFriendsMajority", types: [ArgumentType.UniqueID]//need to think about its value and arguments I think /*
 m.add predicate: "ratingPrior", types [ArgumentType.UniqueID]
+m.add predicate: "businessAvgRating", types [ArgumentType.UniqueID]
 m.add predicate: "friends" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 m.add predicate: "review_count" , types: [ArgumentType.UniqueID]
 m.add predicate: "bestReviewer" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
@@ -79,13 +80,13 @@ m.add function: "bestReviewer" , implementation : new bestReviewer()
 
 //two sided prior
 UniqueID constant = data.getUniqueID(0)
-m.add rule: ( user(U) & business(J) & ratingPrior(U) ) >> rating(U,J), weight: 5.0, squared: "Y";
-m.add rule: ( rating(U,J) ) >> ratingPrior(U), weight: 5.0, squared: sq;
+m.add rule: ( user(U) & business(J) & ratingPrior(U) ) >> rating(U,J), weight: 5.0;
+m.add rule: ( rating(U,J) ) >> ratingPrior(U), weight: 5.0 ;
 
 //m.add rule : ( user(u) & business(B) & ratingFriendsMajority(B)) >> rating (u,B) , weight : 5
 m.add rule : (friends(u1,u2) & rating (u1,B) >> rating (u2,B) , weight :5
 m.add rule : ( friends(u1,u2) & similarUser(u1,u2) & rating (u1,B)) >> rating (u2,B) , weight : 5
-m.add rule : ( friends(u1,u2) & bestReviewer(u1,u2) & rating (u1,B))>> rating (u2,B) , weight :5
+//m.add rule : ( friends(u1,u2) & bestReviewer(u1,u2) & rating (u1,B))>> rating (u2,B) , weight :5
 m.add rule : ( similarItem(B1,B2) & rating (u,B1)) >> rating (u, B2), weight :5
 m.add rule : ( similaruser (u1,u2) & rating (u1,B)) >> rating (u2,B) , weight :5
 
@@ -104,7 +105,8 @@ configGenerator.setLearningMethods(methods);
 /* MLE/MPLE options */
 configGenerator.setVotedPerceptronStepCounts([100]);
 configGenerator.setVotedPerceptronStepSizes([(double) 1.0]);
-folds = 10
+folds = 1
+simThresh= 0.5
 
 // assigning configbundle to the experiment, creating maps to keep results
 List<ConfigBundle> configs = configGenerator.getConfigs();
@@ -125,14 +127,19 @@ for (int fold = 0; fold < folds; fold++) {
 	def inserter;
 	// users
 	inserter = data.getInserter(user, read_tr);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/users-tr-1000.txt");// need to change
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/users-tr.txt");// need to change
 	inserter = data.getInserter(user, read_te);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/users-te-1000.txt");// need to change
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/users-te.txt");// need to change
 	// businesses
 	inserter = data.getInserter(business, read_tr);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/business.txt");// need to put txt files
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/MLN-businesses.txt");// need to put txt files
 	inserter = data.getInserter(business, read_te);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/ business.txt");
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/ MLN-businesses.txt");
+	//Friends
+	inserter = data.getInserter(friends, read_tr);
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/MLN-friends.txt");// need to put txt files
+	inserter = data.getInserter(business, read_te);
+	InserterUtils.loadDelimitedDatatruth(inserter, dataPath + "/ MLN-friends.txt");
 	//user-user cosine similarity by rating
 	inserter = data.getInserter(similarUser, read_tr);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
@@ -155,10 +162,17 @@ for (int fold = 0; fold < folds; fold++) {
 	inserter = data.getInserter(rating, labels_te);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/bussiness/ratings-te-uno-" + fold + ".txt");
 	// prior (we'll overwrite later) need to modify
-	data.getInserter(ratingPrior, read_tr).insertValue(0.5, constant)
-	data.getInserter(ratingPrior, read_te).insertValue(0.5, constant)
-	
-	
+//	data.getInserter(ratingPrior, read_tr).insertValue(0.5, constant)
+//	data.getInserter(ratingPrior, read_te).insertValue(0.5, constant)
+	inserter = data.getInserter(ratingPrior, read_tr);
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-user-avg-rating.txt" + fold + ".txt");
+	inserter = data.getInserter(ratingPrior, read_te);
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-user-avg-rating.txt" + fold + ".txt");
+	//businessAvgRatings
+	inserter = data.getInserter(businessAvgRating, read_tr);
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-business-avg-rating.txt" + fold + ".txt");
+	inserter = data.getInserter(businessAvgRating, read_te);
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-business-avg-rating.txt" + fold + ".txt");
 
 	/** POPULATE DB ***/
 
@@ -177,8 +191,8 @@ for (int fold = 0; fold < folds; fold++) {
 	subs.put(User, users);
 	subs.put(Business, business);
 	def toClose;
- 	AdjCosineSimilarity userCosSim = new AdjCosineSimilarity(rating, 1, avgBusinessRating, simThresh);
-	AdjCosineSimilarity businessCosSim = new AdjCosineSimilarity(rating, 0, avgUserRating, simThresh);
+ 	AdjCosineSimilarity userCosSim = new AdjCosineSimilarity(rating, 1, ratingPrior, simThresh);
+	AdjCosineSimilarity businessCosSim = new AdjCosineSimilarity(rating, 0, businessAvgRating, simThresh);
 	
 	Database trainDB = data.getDatabase(read_tr);
 	ResultList userGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(user));
