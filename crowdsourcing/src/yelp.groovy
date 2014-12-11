@@ -141,15 +141,15 @@ for (int fold = 0; fold < folds; fold++) {
 	inserter = data.getInserter(business, read_te);
 	InserterUtils.loadDelimitedDatatruth(inserter, dataPath + "/ MLN-friends.txt");
 	//user-user cosine similarity by rating
-	inserter = data.getInserter(similarUser, read_tr);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
-	inserter = data.getInserter(similarUser, read_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
+//	inserter = data.getInserter(similarUser, read_tr);
+//	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
+//	inserter = data.getInserter(similarUser, read_te);
+//	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
 	// review text similarity
-	inserter = data.getInserter(simJokeText, read_tr);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "//ReviewTextSim.txt");//
-	inserter = data.getInserter(simJokeText, read_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ReviewTextSim.txt");
+//	inserter = data.getInserter(simJokeText, read_tr);
+//	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "//ReviewTextSim.txt");//
+//	inserter = data.getInserter(simJokeText, read_te);
+//	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ReviewTextSim.txt");
 	// observed ratings
 	inserter = data.getInserter(rating, read_tr);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/bussiness/ratings-tr-obs-" + fold + ".txt");
