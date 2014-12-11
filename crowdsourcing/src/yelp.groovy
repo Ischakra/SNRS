@@ -35,7 +35,7 @@ import edu.umd.cs.psl.util.database.Queries
 
 
 
-def dataPath = "./data/yelp/"
+def dataPath = "./data/"
 
 Logger log = LoggerFactory.getLogger(this.class)
 ConfigManager cm = ConfigManager.getManager();
@@ -138,7 +138,7 @@ for (int fold = 0; fold < folds; fold++) {
 	//Friends
 	inserter = data.getInserter(friends, read_tr);
 	InserterUtils.loadDelimitedData(inserter, dataPath + "/MLN-friends.txt");// need to put txt files
-	inserter = data.getInserter(business, read_te);
+	inserter = data.getInserter(friends, read_te);
 	InserterUtils.loadDelimitedDatatruth(inserter, dataPath + "/ MLN-friends.txt");
 	//user-user cosine similarity by rating
 //	inserter = data.getInserter(similarUser, read_tr);
@@ -152,15 +152,15 @@ for (int fold = 0; fold < folds; fold++) {
 //	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ReviewTextSim.txt");
 	// observed ratings
 	inserter = data.getInserter(rating, read_tr);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/bussiness/ratings-tr-obs-" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-tr-obs-" + fold + ".txt");
 	inserter = data.getInserter(rating, read_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/bussiness/ratings-te-obs" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-te-obs" + fold + ".txt");
 	//I have not kept ratingObs
 	// unobserved ratings (ground truth)
 	inserter = data.getInserter(rating, labels_tr);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/bussiness/ratings-tr-uno-" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-tr-uno-" + fold + ".txt");
 	inserter = data.getInserter(rating, labels_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/bussiness/ratings-te-uno-" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-te-uno-" + fold + ".txt");
 	// prior (we'll overwrite later) need to modify
 //	data.getInserter(ratingPrior, read_tr).insertValue(0.5, constant)
 //	data.getInserter(ratingPrior, read_te).insertValue(0.5, constant)
