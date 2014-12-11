@@ -196,13 +196,14 @@ for (int fold = 0; fold < folds; fold++) {
 	
 	Database trainDB = data.getDatabase(read_tr);
 	ResultList userGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(user));
-	for (int i = 0; i < userGroundings.size(); i++) {
+	
+	 for (int i = 0; i < userGroundings.size(); i++) {
 		GroundTerm u = userGroundings.get(i)[0];
 		users.add(u);// adding u to the Map of users
-		// need not calculate avg
-		RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(avgUserRating, u)// change the avg
+		// need not calcul ate avg
+	/*	RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(avgUserRating, u)// change the avg
 		a.setValue(avg);// need to read given avg values from file before this
-		trainDB.commit(a);
+		trainDB.commit(a); */
 	}
 	
 	ResultList businessGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(business));
@@ -210,9 +211,9 @@ for (int fold = 0; fold < folds; fold++) {
 		GroundTerm b = businessGroundings.get(i)[0];
 		business.add(b);// adding b to the Map of business
 		// need not calculate avg
-		RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(avgBusinessRating, b)// change the avg
-		a.setValue(avg);// need to read given avg values from file before this
-		trainDB.commit(a);
+	//	RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(avgBusinessRating, b)// change the avg
+	//	a.setValue(avg);// need to read given avg values from file before this
+	//	trainDB.commit(a);
 	}
 	
 	
@@ -220,12 +221,17 @@ for (int fold = 0; fold < folds; fold++) {
 	log.info("Computing training business similarities ...")
 	int nnzSim = 0;
 	double avgsim = 0.0;
+//	PrintWriter writer = new PrintWriter("the-file-name.txt", "UTF-8");
+//	writer.println("The first line");
 	List<GroundTerm> businessList = new ArrayList(business);
 	for (int i = 0; i < businessList.size(); i++) {
 		GroundTerm j1 = businessList.get(i);
 		for (int j = i+1; j < businessList.size(); j++) {
 			GroundTerm j2 = businessList.get(j);
 			double s = businessCosSim.getValue(trainDB, j1, j2);
+			log.info(" business similarity : {} " s)
+			// write a text file here
+			system.out.println ()
 			if (s > 0.0) {
 				/* upper half */ // why half ?
 				RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j1, j2);
@@ -241,7 +247,7 @@ for (int fold = 0; fold < folds; fold++) {
 			}
 		}
 	}
-	
+	//write.close
 	log.info("Computing training user similarities ...")
 	int nnzSim = 0;
 	double avgsim = 0.0;
@@ -251,6 +257,7 @@ for (int fold = 0; fold < folds; fold++) {
 		for (int j = i+1; j < usersList.size(); j++) {
 			GroundTerm j2 = usersList.get(j);
 			double s = userCosSim.getValue(trainDB, j1, j2);
+			log.info (" user similarity : {} ", s)
 			if (s > 0.0) {
 				/* upper half */ // why half ?
 				RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j1, j2);
@@ -291,9 +298,9 @@ for (int fold = 0; fold < folds; fold++) {
 		GroundTerm u = userGroundings.get(i)[0];
 		users.add(u);// adding u to the Map of users
 		// need not calculate avg
-		RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(avgUserRating, u)// change the avg
-		a.setValue(avg);// need to read given avg values from file before this
-		testDB.commit(a);
+	//	RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(avgUserRating, u)// change the avg
+	//	a.setValue(avg);// need to read given avg values from file before this
+	//	testDB.commit(a);
 	}
 	
 	ResultList businessGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(business));
@@ -301,9 +308,9 @@ for (int fold = 0; fold < folds; fold++) {
 		GroundTerm b = businessGroundings.get(i)[0];
 		business.add(b);// adding b to the Map of business
 		// need not calculate avg
-		RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(avgBusinessRating, b)// change the avg
-		a.setValue(avg);// need to read given avg values from file before this
-		testDB.commit(a);
+	//	RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(avgBusinessRating, b)// change the avg
+	//	a.setValue(avg);// need to read given avg values from file before this
+	//	testDB.commit(a);
 	}
 // did not compute the priors, need to do something
 
@@ -363,7 +370,7 @@ for (int fold = 0; fold < folds; fold++) {
 	testDB.close();
 	/* Populate testing database. */
 	log.info("Populating testing database ...");
-	toClose = [user,business,ratingObs,ratingPrior,simJokeText,avgUserRatingObs,avgJokeRatingObs,simObsRating] as Set;// check with sachi
+	toClose = [user,business,rating,ratingPrior,avgBusinessRating,simObsRating] as Set;// check with sachi
 	testDB = data.getDatabase(write_te, toClose, read_te);
 	dbPop = new DatabasePopulator(testDB);
 	dbPop.populate(new QueryAtom(rating, User, Business), subs);
