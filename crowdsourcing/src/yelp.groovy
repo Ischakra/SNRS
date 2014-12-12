@@ -61,7 +61,7 @@ m.add predicate: "user" , types: [ArgumentType.UniqueID]
 m.add predicate: "bussiness" , types: [ArgumentType.UniqueID]
 m.add predicate: "rating", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 //m.add predicate: "ratingFriendsMajority", types: [ArgumentType.UniqueID]//need to think about its value and arguments I think /*
-m.add predicate: "ratingPrior", types [ArgumentType.UniqueID]
+m.add predicate: "ratingPrior", types: [ArgumentType.UniqueID]
 m.add predicate: "businessAvgRating", types [ArgumentType.UniqueID]
 m.add predicate: "friends" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 m.add predicate: "review_count" , types: [ArgumentType.UniqueID]
