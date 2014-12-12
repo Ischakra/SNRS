@@ -378,7 +378,7 @@ for (int fold = 0; fold < folds; fold++) {
 	testDB.close();
 	/* Populate testing database. */
 	log.info("Populating testing database ...");
-	toClose = [user,business,rating,ratingPrior,businessAvgRating,simObsRatingB,simObsRatingU] as Set;// check with sachi
+	toClose = [user,business,rating,ratingPrior,businessAvgRating,friends,simObsRatingB,simObsRatingU] as Set;// check with sachi
 	testDB = data.getDatabase(write_te, toClose, read_te);
 	dbPop = new DatabasePopulator(testDB);
 	dbPop.populate(new QueryAtom(rating, User, Business), subs);
