@@ -153,6 +153,7 @@ for (int fold = 0; fold < folds; fold++) {
 	// observed ratings
 	inserter = data.getInserter(rating, read_tr);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-tr-obs-" + fold + ".txt");
+	log.info("{} \t", fold);
 	inserter = data.getInserter(rating, read_te);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-te-obs" + fold + ".txt");
 	//I have not kept ratingObs
