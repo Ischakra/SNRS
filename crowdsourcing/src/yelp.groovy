@@ -58,7 +58,7 @@ log.info("Initializing model ...");
 PSLModel m = new PSLModel(this, data);
 
 m.add predicate: "user" , types: [ArgumentType.UniqueID]
-m.add predicate: "bussiness" , types: [ArgumentType.UniqueID]
+m.add predicate: "business" , types: [ArgumentType.UniqueID]
 m.add predicate: "rating", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 //m.add predicate: "ratingFriendsMajority", types: [ArgumentType.UniqueID]//need to think about its value and arguments I think /*
 m.add predicate: "ratingPrior", types: [ArgumentType.UniqueID]
