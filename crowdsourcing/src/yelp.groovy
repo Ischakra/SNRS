@@ -3,7 +3,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import crowdsourcing.AdjCosineSimilarity;
 import util.ExperimentConfigGenerator;
-import edu.umd.cs.bachuai13.util.WeightLearner;
+import util.WeightLearner;
 
 import com.google.common.collect.Iterables
 import edu.umd.cs.psl.application.inference.MPEInference
@@ -65,18 +65,18 @@ m.add predicate: "ratingPrior", types [ArgumentType.UniqueID]
 m.add predicate: "businessAvgRating", types [ArgumentType.UniqueID]
 m.add predicate: "friends" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 m.add predicate: "review_count" , types: [ArgumentType.UniqueID]
-m.add predicate: "bestReviewer" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+//m.add predicate: "bestReviewer" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 //m.add predicate: "votes", types, types : [ArgumentType.UniqueID//
-m.add predicate: "fans" , types: [ArgumentType.UniqueID]
+//m.add predicate: "fans" , types: [ArgumentType.UniqueID]
 
-m.add predicate: "similarUser", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-m.add predicate: "similarItem", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+//m.add predicate: "similarUser", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+//m.add predicate: "similarItem", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 
 
-m.add function: "similaruser" , implementation: new userSimilarity()*/write implementation*/
-m.add function: "similaritem" , implementation: new itemSimilarity ()
-m.add function: "ratingFriendsMajority", implementation : new ratingFriendsMajority()// majority rating among friends/*
-m.add function: "bestReviewer" , implementation : new bestReviewer()
+//m.add function: "similaruser" , implementation: new userSimilarity()//write implementation*/
+//m.add function: "similaritem" , implementation: new itemSimilarity ()
+//m.add function: "ratingFriendsMajority", implementation : new ratingFriendsMajority()// majority rating among friends/*
+//m.add function: "bestReviewer" , implementation : new bestReviewer()
 
 //two sided prior
 UniqueID constant = data.getUniqueID(0)
@@ -249,8 +249,8 @@ for (int fold = 0; fold < folds; fold++) {
 	}
 	//write.close
 	log.info("Computing training user similarities ...")
-	int nnzSim = 0;
-	double avgsim = 0.0;
+	nnzSim = 0;
+	 avgsim = 0.0;
 	List<GroundTerm> usersList = new ArrayList(users);
 	for (int i = 0; i < usersList.size(); i++) {
 		GroundTerm j1 = usersList.get(i);
@@ -293,7 +293,7 @@ for (int fold = 0; fold < folds; fold++) {
 	 *
 	 */
 	Database testDB = data.getDatabase(read_te);
-	ResultList userGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(user));
+	 userGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(user));
 	for (int i = 0; i < userGroundings.size(); i++) {
 		GroundTerm u = userGroundings.get(i)[0];
 		users.add(u);// adding u to the Map of users
@@ -303,7 +303,7 @@ for (int fold = 0; fold < folds; fold++) {
 	//	testDB.commit(a);
 	}
 	
-	ResultList businessGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(business));
+	 businessGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(business));
 	for (int i = 0; i < businessGroundings.size(); i++) {
 		GroundTerm b = businessGroundings.get(i)[0];
 		business.add(b);// adding b to the Map of business
@@ -316,9 +316,9 @@ for (int fold = 0; fold < folds; fold++) {
 
 	/* Precompute the similarities of users and businesses */
 	log.info("Computing training business similarities ...")
-	int nnzSim = 0;
-	double avgsim = 0.0;
-	List<GroundTerm> businessList = new ArrayList(business);
+	 nnzSim = 0;
+	 avgsim = 0.0;
+	businessList = new ArrayList(business);
 	for (int i = 0; i < businessList.size(); i++) {
 		GroundTerm j1 = businessList.get(i);
 		for (int j = i+1; j < businessList.size(); j++) {
@@ -341,9 +341,9 @@ for (int fold = 0; fold < folds; fold++) {
 	}
 	
 	log.info("Computing training user similarities ...")
-	int nnzSim = 0;
-	double avgsim = 0.0;
-	List<GroundTerm> usersList = new ArrayList(users);
+	nnzSim = 0;
+	avgsim = 0.0;
+	usersList = new ArrayList(users);
 	for (int i = 0; i < usersList.size(); i++) {
 		GroundTerm j1 = usersList.get(i);
 		for (int j = i+1; j < usersList.size(); j++) {
