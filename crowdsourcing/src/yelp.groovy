@@ -45,7 +45,7 @@ def defPath = System.getProperty("java.io.tmpdir") + "/psl-yelp"
 def dbpath = cb.getString("dbpath", defPath)
 DataStore data = new RDBMSDataStore(new H2DatabaseDriver(Type.Disk, dbpath, true), cb)
 
-ExperimentConfigGenerator configGenerator = new ExperimentConfigGenerator("Yelp");
+ExperimentConfigGenerator configGenerator = new ExperimentConfigGenerator("crowdsourcing");
 methods = ["MLE"];
 configGenerator.setLearningMethods(methods);
 configGenerator.setVotedPerceptronStepCounts([100]);
