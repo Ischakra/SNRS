@@ -288,7 +288,7 @@ for (int fold = 0; fold < folds; fold++) {
 	
 	
 	log.info("Populating training database ...");
-	toClose = [user,business,rating,ratingPrior,businessAvgRating,simObsRatingB,simObsRatingU] as Set// check
+	toClose = [user,business,rating,ratingPrior,businessAvgRating,friends,simObsRatingB,simObsRatingU] as Set// check
 	trainDB = data.getDatabase(write_tr, toClose, read_tr);
 	dbPop = new DatabasePopulator(trainDB);
 	dbPop.populate(new QueryAtom(rating, User, Business), subs);
