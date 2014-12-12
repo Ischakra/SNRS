@@ -229,7 +229,7 @@ for (int fold = 0; fold < folds; fold++) {
 		for (int j = i+1; j < businessList.size(); j++) {
 			GroundTerm j2 = businessList.get(j);
 			double s = businessCosSim.getValue(trainDB, j1, j2);
-			log.info(" business similarity : {} " s)
+			log.info(" business similarity : {} " ,s)
 			// write a text file here
 			system.out.println ()
 			if (s > 0.0) {
