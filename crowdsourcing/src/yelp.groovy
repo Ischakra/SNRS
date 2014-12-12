@@ -132,12 +132,12 @@ for (int fold = 0; fold < folds; fold++) {
 	InserterUtils.loadDelimitedData(inserter, dataPath + "/users-te.txt");// need to change
 	// businesses
 	inserter = data.getInserter(business, read_tr);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/MLN-businesses.txt");// need to put txt files
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/businesses.txt");// need to put txt files
 	inserter = data.getInserter(business, read_te);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/MLN-businesses.txt");
+	InserterUtils.loadDelimitedData(inserter, dataPath + "/businesses.txt");
 	//Friends
 	inserter = data.getInserter(friends, read_tr);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/MLN-friends.txt");// need to put txt files
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/friends.txt");// need to put txt files
 	inserter = data.getInserter(friends, read_te);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/MLN-friends.txt");
 	//user-user cosine similarity by rating
