@@ -137,9 +137,9 @@ for (int fold = 0; fold < folds; fold++) {
 	InserterUtils.loadDelimitedData(inserter, dataPath + "/MLN-businesses.txt");
 	//Friends
 	inserter = data.getInserter(friends, read_tr);
-	InserterUtils.loadDelimitedData(inserter, dataPath + "/MLN-friends.txt");// need to put txt files
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/MLN-friends.txt");// need to put txt files
 	inserter = data.getInserter(friends, read_te);
-	InserterUtils.loadDelimitedDatatruth(inserter, dataPath + "/MLN-friends.txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/MLN-friends.txt");
 	//user-user cosine similarity by rating
 //	inserter = data.getInserter(similarUser, read_tr);
 //	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
