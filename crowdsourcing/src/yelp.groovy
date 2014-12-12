@@ -1,5 +1,4 @@
 package crowdsourcing;
-
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import crowdsourcing.AdjCosineSimilarity;
@@ -63,15 +62,16 @@ m.add predicate: "business" , types: [ArgumentType.UniqueID]
 m.add predicate: "rating", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 //m.add predicate: "ratingFriendsMajority", types: [ArgumentType.UniqueID]//need to think about its value and arguments I think /*
 m.add predicate: "ratingPrior", types: [ArgumentType.UniqueID]
-m.add predicate: "businessAvgRating", types [ArgumentType.UniqueID]
+m.add predicate: "businessAvgRating", types: [ArgumentType.UniqueID]
 m.add predicate: "friends" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-m.add predicate: "review_count" , types: [ArgumentType.UniqueID]
-//m.add predicate: "bestReviewer" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-//m.add predicate: "votes", types, types : [ArgumentType.UniqueID//
+//m.add predicate: "review_count" , types: [ArgumentType.UniqueID]
+
+//m.add predicate: "bestReviewer", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+//m.add predicate: "votes", types : [ArgumentType.UniqueID//
 //m.add predicate: "fans" , types: [ArgumentType.UniqueID]
 
-//m.add predicate: "similarUser", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-//m.add predicate: "similarItem", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+m.add predicate: "simObsRatingU", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+m.add predicate: "simObsRatingB", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 
 
 //m.add function: "similaruser" , implementation: new userSimilarity()//write implementation*/
@@ -80,16 +80,16 @@ m.add predicate: "review_count" , types: [ArgumentType.UniqueID]
 //m.add function: "bestReviewer" , implementation : new bestReviewer()
 
 //two sided prior
-UniqueID constant = data.getUniqueID(0)
-m.add rule: ( user(U) & business(J) & ratingPrior(U) ) >> rating(U,J), weight: 5.0;
-m.add rule: ( rating(U,J) ) >> ratingPrior(U), weight: 5.0 ;
+//UniqueID constant = data.getUniqueID(0)
+m.add rule: ( user(U) & business(B) & ratingPrior(U) ) >> rating(U,B), weight: 5.0;
+m.add rule: ( rating(U,B) ) >> ratingPrior(U), weight: 5.0 ;
 
 //m.add rule : ( user(u) & business(B) & ratingFriendsMajority(B)) >> rating (u,B) , weight : 5
-m.add rule : ( friends(u1,u2) & rating (u1,B) ) >> rating (u2,B) , weight :5;
-m.add rule : ( friends(u1,u2) & similarUser(u1,u2) & rating (u1,B)) >> rating (u2,B) , weight : 5
+m.add rule : ( friends(U1,U2) & rating (U1,B) ) >> rating (U2,B) , weight :5;
+//m.add rule : ( friends(U1,U2) & similarUser(U1,U2) & rating (U1,B)) >> rating (u2,B) , weight : 5
 //m.add rule : ( friends(u1,u2) & bestReviewer(u1,u2) & rating (u1,B))>> rating (u2,B) , weight :5
-m.add rule : ( similarItem(B1,B2) & rating (u,B1)) >> rating (u, B2), weight :5
-m.add rule : ( similaruser (u1,u2) & rating (u1,B)) >> rating (u2,B) , weight :5
+//m.add rule : ( similarItem(B1,B2) & rating (u,B1)) >> rating (u, B2), weight :5
+//m.add rule : ( similaruser (u1,u2) & rating (u1,B)) >> rating (u2,B) , weight :5
 
 log.info("Model: {}", m)
 
@@ -140,7 +140,7 @@ for (int fold = 0; fold < folds; fold++) {
 	inserter = data.getInserter(friends, read_tr);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/friends.txt");// need to put txt files
 	inserter = data.getInserter(friends, read_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/MLN-friends.txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/friends.txt");
 	//user-user cosine similarity by rating
 //	inserter = data.getInserter(similarUser, read_tr);
 //	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/userSimilarity.txt");
@@ -152,29 +152,34 @@ for (int fold = 0; fold < folds; fold++) {
 //	inserter = data.getInserter(simJokeText, read_te);
 //	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ReviewTextSim.txt");
 	// observed ratings
+	log.info(" no error")
 	inserter = data.getInserter(rating, read_tr);
+	log.info(" no error again")
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-tr-obs-" + fold + ".txt");
-	log.info("{} \t", fold);
+	log.info("no error2");
 	inserter = data.getInserter(rating, read_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-te-obs" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-te-obs-" + fold + ".txt");
+	log.info("{} \t", fold);
 	//I have not kept ratingObs
 	// unobserved ratings (ground truth)
 	inserter = data.getInserter(rating, labels_tr);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-tr-uno-" + fold + ".txt");
+	log.info("{} \t", fold);
 	inserter = data.getInserter(rating, labels_te);
 	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "/ratings/yelp-1-te-uno-" + fold + ".txt");
+	log.info("{} \t", fold);
 	// prior (we'll overwrite later) need to modify
 //	data.getInserter(ratingPrior, read_tr).insertValue(0.5, constant)
 //	data.getInserter(ratingPrior, read_te).insertValue(0.5, constant)
 	inserter = data.getInserter(ratingPrior, read_tr);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-user-avg-rating.txt" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "user-avg.txt");
 	inserter = data.getInserter(ratingPrior, read_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-user-avg-rating.txt" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "user-avg.txt");
 	//businessAvgRatings
 	inserter = data.getInserter(businessAvgRating, read_tr);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-business-avg-rating.txt" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "business-avg.txt");
 	inserter = data.getInserter(businessAvgRating, read_te);
-	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "MLN-business-avg-rating.txt" + fold + ".txt");
+	InserterUtils.loadDelimitedDataTruth(inserter, dataPath + "business-avg.txt");
 
 	/** POPULATE DB ***/
 
@@ -188,16 +193,17 @@ for (int fold = 0; fold < folds; fold++) {
 	Variable User = new Variable("User");
 	Variable Business = new Variable("Business");
 	Set<GroundTerm> users = new HashSet<GroundTerm>();
-	Set<GroundTerm> business = new HashSet<GroundTerm>();
+	Set<GroundTerm> businesses = new HashSet<GroundTerm>();
 	Map<Variable, Set<GroundTerm>> subs = new HashMap<Variable, Set<GroundTerm>>();
 	subs.put(User, users);
-	subs.put(Business, business);
+	subs.put(Business, businesses);
 	def toClose;
  	AdjCosineSimilarity userCosSim = new AdjCosineSimilarity(rating, 1, ratingPrior, simThresh);
 	AdjCosineSimilarity businessCosSim = new AdjCosineSimilarity(rating, 0, businessAvgRating, simThresh);
 	
 	Database trainDB = data.getDatabase(read_tr);
 	ResultList userGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(user));
+	
 	
 	 for (int i = 0; i < userGroundings.size(); i++) {
 		GroundTerm u = userGroundings.get(i)[0];
@@ -211,7 +217,7 @@ for (int fold = 0; fold < folds; fold++) {
 	ResultList businessGroundings = trainDB.executeQuery(Queries.getQueryForAllAtoms(business));
 	for (int i = 0; i < businessGroundings.size(); i++) {
 		GroundTerm b = businessGroundings.get(i)[0];
-		business.add(b);// adding b to the Map of business
+		businesses.add(b);// adding b to the Map of business
 		// need not calculate avg
 	//	RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(avgBusinessRating, b)// change the avg
 	//	a.setValue(avg);// need to read given avg values from file before this
@@ -225,7 +231,7 @@ for (int fold = 0; fold < folds; fold++) {
 	double avgsim = 0.0;
 //	PrintWriter writer = new PrintWriter("the-file-name.txt", "UTF-8");
 //	writer.println("The first line");
-	List<GroundTerm> businessList = new ArrayList(business);
+	List<GroundTerm> businessList = new ArrayList(businesses);
 	for (int i = 0; i < businessList.size(); i++) {
 		GroundTerm j1 = businessList.get(i);
 		for (int j = i+1; j < businessList.size(); j++) {
@@ -233,7 +239,7 @@ for (int fold = 0; fold < folds; fold++) {
 			double s = businessCosSim.getValue(trainDB, j1, j2);
 			log.info(" business similarity : {} " ,s)
 			// write a text file here
-			system.out.println ()
+			//system.out.println ()
 			if (s > 0.0) {
 				/* upper half */ // why half ?
 				RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j1, j2);
@@ -262,11 +268,11 @@ for (int fold = 0; fold < folds; fold++) {
 			log.info (" user similarity : {} ", s)
 			if (s > 0.0) {
 				/* upper half */ // why half ?
-				RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j1, j2);
+				RandomVariableAtom a = (RandomVariableAtom) trainDB.getAtom(simObsRatingU, j1, j2);
 				a.setValue(s);
 				trainDB.commit(a);
 				/* lower half */
-				a = (RandomVariableAtom) trainDB.getAtom(simObsRatingB, j2, j1);
+				a = (RandomVariableAtom) trainDB.getAtom(simObsRatingU, j2, j1);
 				a.setValue(s);
 				trainDB.commit(a);
 				/* update stats */
@@ -282,7 +288,7 @@ for (int fold = 0; fold < folds; fold++) {
 	
 	
 	log.info("Populating training database ...");
-	toClose = [user,business,ratingObs,ratingPrior,simJokeText,avgUserRatingObs,avgJokeRatingObs,simObsRating] as Set;// check
+	toClose = [user,business,rating,ratingPrior,businessAvgRating,simObsRatingB,simObsRatingU] as Set// check
 	trainDB = data.getDatabase(write_tr, toClose, read_tr);
 	dbPop = new DatabasePopulator(trainDB);
 	dbPop.populate(new QueryAtom(rating, User, Business), subs);
@@ -290,7 +296,7 @@ for (int fold = 0; fold < folds; fold++) {
 
 	/* Clear the users, business so we can reuse */
 	users.clear();
-	business.clear();
+	businesses.clear();
 	/* Get the test set users/business
 	 *
 	 */
@@ -308,7 +314,7 @@ for (int fold = 0; fold < folds; fold++) {
 	 businessGroundings = testDB.executeQuery(Queries.getQueryForAllAtoms(business));
 	for (int i = 0; i < businessGroundings.size(); i++) {
 		GroundTerm b = businessGroundings.get(i)[0];
-		business.add(b);// adding b to the Map of business
+		businesses.add(b);// adding b to the Map of business
 		// need not calculate avg
 	//	RandomVariableAtom a = (RandomVariableAtom) testDB.getAtom(avgBusinessRating, b)// change the avg
 	//	a.setValue(avg);// need to read given avg values from file before this
@@ -320,7 +326,7 @@ for (int fold = 0; fold < folds; fold++) {
 	log.info("Computing training business similarities ...")
 	 nnzSim = 0;
 	 avgsim = 0.0;
-	businessList = new ArrayList(business);
+	businessList = new ArrayList(businesses);
 	for (int i = 0; i < businessList.size(); i++) {
 		GroundTerm j1 = businessList.get(i);
 		for (int j = i+1; j < businessList.size(); j++) {
@@ -372,7 +378,7 @@ for (int fold = 0; fold < folds; fold++) {
 	testDB.close();
 	/* Populate testing database. */
 	log.info("Populating testing database ...");
-	toClose = [user,business,rating,ratingPrior,avgBusinessRating,simObsRating] as Set;// check with sachi
+	toClose = [user,business,rating,ratingPrior,businessAvgRating,simObsRatingB,simObsRatingU] as Set;// check with sachi
 	testDB = data.getDatabase(write_te, toClose, read_te);
 	dbPop = new DatabasePopulator(testDB);
 	dbPop.populate(new QueryAtom(rating, User, Business), subs);
